@@ -131,12 +131,15 @@ public class AgentNew {
     }
 
     public static void awaitServerStartUp(Instrumentation instrumentation, ClassLoader classLoader) {
-        System.out.println("[K2-JA] trying server detection .");
-        if (jbossDetected(classLoader, instrumentation)) {
-            // Place Classloader adjustments
-            ClassloaderAdjustments.jbossSpecificAdjustments();
-            System.out.println("[K2-JA] JBoss detected server wait initialised.");
-            awaitJbossServerStartInitialization(instrumentation);
+        try {
+            System.out.println("[K2-JA] trying server detection.");
+            if (jbossDetected(classLoader, instrumentation)) {
+                // Place Classloader adjustments
+                ClassloaderAdjustments.jbossSpecificAdjustments();
+                System.out.println("[K2-JA] JBoss detected server wait initialised.");
+                awaitJbossServerStartInitialization(instrumentation);
+            }
+        } catch (Throwable e) {
         }
     }
 
@@ -187,6 +190,6 @@ public class AgentNew {
             }
         }
         return false;
-	}
+    }
 
 }
