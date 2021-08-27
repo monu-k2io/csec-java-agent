@@ -137,14 +137,7 @@ public class CallbackUtils {
 		Set<String> attackContructs = isXSS(combinedRequestData);
 
 		for (String construct : attackContructs) {
-			// System.err.println(String.format(
-			// "Reflected XSS contruct detected :: %s :: Request : %s", construct,
-			// httpRequestBean));
 			if (StringUtils.containsIgnoreCase(combinedResponseDataString, construct)) {
-				// System.err.println(String.format(
-				// "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response
-				// : %s", construct,
-				// httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
 				toReturn.add(construct);
 
 				if (!(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
@@ -153,10 +146,25 @@ public class CallbackUtils {
 				}
 			}
 		}
-		if (toReturn.isEmpty()) {
-			toReturn.add(StringUtils.EMPTY);
-		}
-		return toReturn;
+
+        Set<String> finalAttackConstructs = new HashSet<>();
+
+        if (!toReturn.isEmpty()) {
+            Set<String> responseConstructs = isXSS(combinedResponseData);
+            for (String responseConstruct : responseConstructs) {
+                for (final String searchCharSequence : toReturn) {
+                    if (StringUtils.contains(responseConstruct, searchCharSequence)) {
+                        finalAttackConstructs.add(searchCharSequence);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (finalAttackConstructs.isEmpty()) {
+            finalAttackConstructs.add(StringUtils.EMPTY);
+        }
+        return finalAttackConstructs;
 	}
 
 	/**
@@ -482,27 +490,8 @@ public class CallbackUtils {
 		String responseBody = httpResponseBean.getResponseBody();
 		String processedBody = responseBody;
 
-//		String processedHeaders = StringEscapeUtils.unescapeJson(httpResponseBean.getHeaders().toString());
-//		String oldHeaders = processedHeaders;
-
 		try {
 			processedData.add(processedBody);
-
-			// processedBody = HtmlEscape.unescapeHtml(responseBody);
-			// processedData.append(processedBody);
-			// processedData.append(FIVE_COLON);
-
-//			processedData.add(processedHeaders);
-
-			// processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
-			// processedData.append(processedHeaders);
-			// processedData.append(FIVE_COLON);
-
-//			processedBody = urlDecode(processedBody);
-//			processedData.add(processedBody);
-
-//			processedHeaders = urlDecode(processedHeaders);
-//			processedData.add(processedHeaders);
 
 			String oldProcessedBody;
 
