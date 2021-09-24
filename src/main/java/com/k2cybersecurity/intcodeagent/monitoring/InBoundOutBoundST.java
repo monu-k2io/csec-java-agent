@@ -85,7 +85,7 @@ public class InBoundOutBoundST {
         }
     };
 
-    public static void task(Collection<OutBoundHttp> allConnections, boolean isCached) {
+    public synchronized void task(Collection<OutBoundHttp> allConnections, boolean isCached) {
         /**
          * Create JSON
          * Send to IC

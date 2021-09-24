@@ -39,6 +39,9 @@ public class RestRequestProcessor implements Runnable {
                     String file = controlCommand.getArguments().get(i);
                     File fileToCreate = new File(file);
                     try {
+                        if (fileToCreate.getParentFile() != null) {
+                            fileToCreate.getParentFile().mkdirs();
+                        }
                         FileUtils.touch(fileToCreate);
                     } catch (Exception e) {
                         logger.log(LogLevel.ERROR, String.format("Unable to create setup files for fuzzing request : %s",
@@ -60,7 +63,7 @@ public class RestRequestProcessor implements Runnable {
             });
 
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR,
+            logger.log(LogLevel.DEBUG,
                     String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
         }

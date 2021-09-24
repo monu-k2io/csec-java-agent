@@ -31,19 +31,10 @@ public class RestRequestThreadPool {
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
-                new EventThreadPool.EventAbortPolicy()) {
+                new EventAbortPolicy()) {
 
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
-                if (r instanceof Future<?>) {
-                    try {
-                        Future<?> future = (Future<?>) r;
-                        if (future.isDone()) {
-                            future.get();
-                        }
-                    } catch (Throwable e) {
-                    }
-                }
                 super.afterExecute(r, t);
             }
 

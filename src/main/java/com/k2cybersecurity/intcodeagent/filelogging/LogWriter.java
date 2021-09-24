@@ -164,13 +164,14 @@ public class LogWriter implements Runnable {
 			File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
 			currentFile.renameTo(rolloverFile);
 			
-			uploadLogsAndDeleteFile(rolloverFile);
-			
+
 			PrintWriter pw = new PrintWriter(new File(currentLogFileName));
 			pw.write(StringUtils.EMPTY);
 			pw.close();
 
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+
+			uploadLogsAndDeleteFile(rolloverFile);
 
 			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
 			if (removeFile > 0) {
@@ -197,10 +198,12 @@ public class LogWriter implements Runnable {
 	}
 	
 	private static void uploadLogsAndDeleteFile(File file) {
-		boolean result = FtpClient.sendLogFile(file);
-		if (result) {
+
+    	// TODO : This should be made non blocking
+//		boolean result = FtpClient.sendLogFile(file);
+//		if (result) {
 			file.delete();
-		}
+//		}
 		
 	}
 	
