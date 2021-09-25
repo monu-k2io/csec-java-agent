@@ -38,7 +38,7 @@ public class RequestUtils {
                         httpRequestBean.getBody());
             }
         } else if (StringUtils.equalsIgnoreCase(httpRequestBean.getMethod(), "POST")){
-            requestBody = RequestBody.create(MediaType.parse(null),
+            requestBody = RequestBody.create(null,
                     httpRequestBean.getBody());
         }
 

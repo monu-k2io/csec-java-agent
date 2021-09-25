@@ -62,7 +62,7 @@ public class RestRequestProcessor implements Runnable {
                 FuzzCleanUpST.getInstance().scheduleCleanUp(path);
             });
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.DEBUG,
                     String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
