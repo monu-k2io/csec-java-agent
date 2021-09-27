@@ -63,7 +63,7 @@ public class RestRequestProcessor implements Runnable {
             });
 
         } catch (Throwable e) {
-            logger.log(LogLevel.DEBUG,
+            logger.log(LogLevel.ERROR,
                     String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
         }
