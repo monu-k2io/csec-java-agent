@@ -114,8 +114,6 @@ public class K2Instrumentator {
 		HealthCheckScheduleThread.getInstance();
 		boolean isWorking = eventWritePool();
 
-		// Place Classloader adjustments
-		ClassloaderAdjustments.jbossSpecificAdjustments();
 
 		System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
 		return isWorking;
