@@ -199,11 +199,12 @@ public class LogWriter implements Runnable {
 	
 	private static void uploadLogsAndDeleteFile(File file) {
 
-    	// TODO : This should be made non blocking
-//		boolean result = FtpClient.sendLogFile(file);
-//		if (result) {
-			file.delete();
-//		}
+        new Thread(() -> {
+            boolean result = FtpClient.sendLogFile(file);
+            if (result) {
+                file.delete();
+            }
+        }).start();
 		
 	}
 	
