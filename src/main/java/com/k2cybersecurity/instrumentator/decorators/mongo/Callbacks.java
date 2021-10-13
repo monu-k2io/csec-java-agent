@@ -6,6 +6,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.NoSQLOperationalBean;
+import org.json.simple.parser.JSONParser;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -18,6 +19,7 @@ public class Callbacks {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && args != null
         ) {
+            System.out.print("COMMAND::::" + new JSONParser().parse(args[1].toString()));
             // For version 3.6.x - 3.12.x
             ThreadLocalOperationLock.getInstance().acquire();
             try {
