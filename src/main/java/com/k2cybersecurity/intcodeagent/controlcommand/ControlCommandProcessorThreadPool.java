@@ -49,7 +49,7 @@ public class ControlCommandProcessorThreadPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            logger.log(LogLevel.SEVERE, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
+            logger.log(LogLevel.WARNING, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
                     ControlCommandProcessorThreadPool.class.getName());
         }
     }
