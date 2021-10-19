@@ -91,8 +91,10 @@ public class ControlCommandProcessorThreadPool {
 
             @Override
             public Thread newThread(Runnable r) {
-                return new Thread(Thread.currentThread().getThreadGroup(), r,
+                Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
                         IAgentConstants.K2_LISTERNER + threadNumber.getAndIncrement());
+                t.setDaemon(true);
+                return t;
             }
         });
     }
