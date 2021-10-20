@@ -60,6 +60,10 @@ public class LogWriter implements Runnable {
         fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
         currentLogFile = new File(fileName);
         currentLogFile.getParentFile().mkdirs();
+        try {
+            Files.setPosixFilePermissions(currentLogFile.getParentFile().toPath(), PosixFilePermissions.fromString("rwxrwxrwx"));
+        } catch (Exception e) {
+        }
         currentLogFileName = fileName;
         try {
             currentLogFile.setReadable(true, false);
