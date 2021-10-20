@@ -7,19 +7,30 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.NoSQLOperationalBean;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.JSONObject;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
 
 public class Callbacks {
-
+    static String[] mongoOperations = {
+            "aggregate",
+            "count",
+            "createIndexes",
+            "distinct",
+            "drop",
+            "dropIndexes",
+            "find",
+            "inline",
+            "mapreduce",
+            "parallelCollectionScan"
+    };
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) throws K2CyberSecurityException, Exception {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && args != null
         ) {
-            System.out.print("COMMAND::::" + new JSONParser().parse(args[1].toString()));
             // For version 3.6.x - 3.12.x
             ThreadLocalOperationLock.getInstance().acquire();
             try {
@@ -28,11 +39,25 @@ public class Callbacks {
                     if (args[6] != null) {
                         Method getPayload = args[6].getClass().getMethod("getPayload");
                         getPayload.setAccessible(true);
-                        List<Object> docs = (List<Object>) getPayload.invoke(args[6]);
-                        EventDispatcher.dispatch(new NoSQLOperationalBean(docs, className, sourceString, exectionId,
+                        List<Object> payload = (List<Object>) getPayload.invoke(args[6]);
+                        Method getPayloadName = args[6].getClass().getMethod("getPayloadName");
+                        getPayloadName.setAccessible(true);
+                        String payloadName = (String) getPayloadName.invoke(args[6]);
+                        JSONObject data = new JSONObject();
+                        data.put("payload", payload);
+                        data.put("payloadType", payloadName);
+                        EventDispatcher.dispatch(new NoSQLOperationalBean(data, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
                     } else if (args[1] != null) {
-                        EventDispatcher.dispatch(new NoSQLOperationalBean(args[1], className, sourceString, exectionId,
+                        JSONObject payload = (JSONObject) new JSONParser().parse((String) args[1]);
+                        JSONObject data = new JSONObject();
+                        data.put("payload", payload);
+                        for (String op : mongoOperations) {
+                            payload.keySet().contains(op);
+                            data.put("payloadType", op);
+                            break;
+                        }
+                        EventDispatcher.dispatch(new NoSQLOperationalBean(data, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
 
                     }
@@ -45,11 +70,25 @@ public class Callbacks {
                     if (args[7] != null) {
                         Method getPayload = args[7].getClass().getMethod("getPayload");
                         getPayload.setAccessible(true);
-                        List<Object> docs = (List<Object>) getPayload.invoke(args[6]);
-                        EventDispatcher.dispatch(new NoSQLOperationalBean(docs, className, sourceString, exectionId,
+                        List<Object> payload = (List<Object>) getPayload.invoke(args[7]);
+                        Method getPayloadName = args[7].getClass().getMethod("getPayloadName");
+                        getPayloadName.setAccessible(true);
+                        String payloadName = (String) getPayloadName.invoke(args[6]);
+                        JSONObject data = new JSONObject();
+                        data.put("payload", payload);
+                        data.put("payloadType", payloadName);
+                        EventDispatcher.dispatch(new NoSQLOperationalBean(data, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
                     } else if (args[1] != null) {
-                        EventDispatcher.dispatch(new NoSQLOperationalBean(args[1], className, sourceString, exectionId,
+                        JSONObject payload = (JSONObject) new JSONParser().parse((String) args[1]);
+                        JSONObject data = new JSONObject();
+                        data.put("payload", payload);
+                        for (String op : mongoOperations) {
+                            payload.keySet().contains(op);
+                            data.put("payloadType", op);
+                            break;
+                        }
+                        EventDispatcher.dispatch(new NoSQLOperationalBean(data, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
 
                     }
