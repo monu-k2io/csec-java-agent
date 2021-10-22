@@ -6,110 +6,10 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.NoSQLOperationalBean;
-import org.json.simple.JSONObject;
 
-import java.lang.reflect.Method;
 import java.time.Instant;
-import java.util.List;
-import java.util.Set;
-
-
 
 public class Callbacks {
-    final static String PAYLOAD_HOLDER = "payload";
-    final static String PAYLOAD_TYPE_HOLDER = "payload";
-    // This is an exhaustive list of operation types
-    // we would be able to identify on from command arg
-    final static String[] MONGO_OPERATIONS = {
-            "aggregate",
-            "count",
-            "createIndexes",
-            "distinct",
-            "drop",
-            "dropIndexes",
-            "find",
-            "inline",
-            "mapreduce",
-            "parallelCollectionScan"
-    };
-
-    /**
-     * Class to hold and maintain a MongoPayload structure
-     */
-    static class MongoPayload {
-        private Object payload = null;
-        private String payloadType = "Unknown";
-
-        MongoPayload(final Object payload) {
-            this.payload = payload;
-        }
-
-        MongoPayload(final Object payload,final String payloadType) {
-            this.payload = payload;
-            this.payloadType = payloadType;
-        }
-
-        public void setPayload(final Object payload) {
-            this.payload = payload;
-        }
-
-        public void setPayloadType(final String payloadType) {
-            this.payloadType = payloadType;
-        }
-
-        public JSONObject getJSON() {
-            JSONObject obj = new JSONObject();
-            obj.put(PAYLOAD_HOLDER, this.payload);
-            obj.put(PAYLOAD_TYPE_HOLDER, this.payloadType);
-            return obj;
-        }
-    }
-
-    /**
-     * Responsible to generate payload from streaming payload
-     * parameter to Mongo's `CommandMessage` constructor.
-     * @param args
-     * @param streamingPayloadIndex
-     * @return
-     * @throws Exception
-     */
-    static MongoPayload formDataFromStreamingPayload(Object[] args, final int streamingPayloadIndex) throws Exception {
-        if (streamingPayloadIndex >0 && args[streamingPayloadIndex] != null) {
-            Method getPayload = args[streamingPayloadIndex].getClass().getMethod("getPayload");
-            getPayload.setAccessible(true);
-            List<Object> payload = (List<Object>) getPayload.invoke(args[streamingPayloadIndex]);
-            Method getPayloadName = args[streamingPayloadIndex].getClass().getMethod("getPayloadName");
-            getPayloadName.setAccessible(true);
-            String payloadName = (String) getPayloadName.invoke(args[streamingPayloadIndex]);
-            MongoPayload data = new MongoPayload(payload, payloadName);
-            return data;
-        }
-        return null;
-    }
-
-    /**
-     * Responsible to generate payload from command
-     * parameter to Mongo's `CommandMessage` constructor.
-     * @param args
-     * @return
-     * @throws Exception
-     */
-    static MongoPayload formDataFromCommand(Object[] args) throws Exception {
-        Method toString = args[1].getClass().getMethod("toString");
-        toString.setAccessible(true);
-        MongoPayload data = new MongoPayload(toString.invoke(args[1]));
-        Method getKeySet = args[1].getClass().getMethod("keySet");
-        getKeySet.setAccessible(true);
-        Set<String> keys = (Set<String>) getKeySet.invoke(args[1]);
-        for (String op : MONGO_OPERATIONS) {
-            if(keys.contains(op)) {
-                data.setPayloadType(op);
-                break;
-            }
-        }
-        return data;
-    }
-
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) throws K2CyberSecurityException, Exception {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
@@ -129,10 +29,9 @@ public class Callbacks {
                         break;
                     default:
                 }
-                MongoPayload data = formDataFromStreamingPayload(args, streamingPayloadIndex);
-                if (data == null) {
-                    data = formDataFromCommand(args);
-                }
+
+                MongoPayload data = MongoPayload.generateMongoPayload(args, streamingPayloadIndex);
+
                 if (data != null) {
                     EventDispatcher.dispatch(new NoSQLOperationalBean(data.getJSON(), className, sourceString, exectionId,
                             Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
