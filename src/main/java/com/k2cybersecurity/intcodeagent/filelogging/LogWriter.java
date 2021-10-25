@@ -60,16 +60,20 @@ public class LogWriter implements Runnable {
         fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
         currentLogFile = new File(fileName);
         currentLogFile.getParentFile().mkdirs();
+        try {
+            Files.setPosixFilePermissions(currentLogFile.getParentFile().toPath(), PosixFilePermissions.fromString("rwxrwxrwx"));
+        } catch (Exception e) {
+        }
         currentLogFileName = fileName;
         try {
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
             maxFileSize = K2JALogProperties.maxfilesize * 1048576;
 
-			// k2.log.handler.maxfilesize=10
-			// k2.log.handler.maxfilesize.unit=MB
+            // k2.log.handler.maxfilesize=10
+            // k2.log.handler.maxfilesize.unit=MB
 
-			String level = K2JALogProperties.level;
+            String level = K2JALogProperties.level;
 			if (level.equals("OFF")) {
 				defaultLogLevel = LogLevel.OFF.getLevel();
 			} else if (level.equals("SEVERE")) {

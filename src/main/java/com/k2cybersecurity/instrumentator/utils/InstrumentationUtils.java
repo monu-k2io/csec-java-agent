@@ -7,9 +7,7 @@ import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
-import com.k2cybersecurity.intcodeagent.logging.ServletEventPool;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
@@ -350,9 +348,9 @@ public class InstrumentationUtils {
         } catch (Throwable e) {
         }
         try {
-            ServletEventPool.getInstance().shutDownThreadPoolExecutor();
+//            ServletEventPool.getInstance().shutDownThreadPoolExecutor();
             HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
-            EventThreadPool.getInstance().shutDownThreadPoolExecutor();
+//            EventThreadPool.getInstance().shutDownThreadPoolExecutor();
             DispatcherPool.getInstance().shutDownThreadPoolExecutor();
             ControlCommandProcessorThreadPool.getInstance().shutDownThreadPoolExecutor();
             EventSendPool.getInstance().shutDownThreadPoolExecutor();
