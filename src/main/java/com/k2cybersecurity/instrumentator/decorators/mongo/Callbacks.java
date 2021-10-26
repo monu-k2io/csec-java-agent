@@ -30,7 +30,7 @@ public class Callbacks {
                     default:
                 }
 
-                MongoPayload data = MongoPayload.generateMongoPayload(args, streamingPayloadIndex);
+                MongoPayload data = MongoPayload.getParser().generateMongoPayload(args, streamingPayloadIndex);
 
                 if (data != null) {
                     EventDispatcher.dispatch(new NoSQLOperationalBean(data.getJSON(), className, sourceString, exectionId,

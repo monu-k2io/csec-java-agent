@@ -29,5 +29,5 @@ public interface MongoConstants {
     String JSON_WRITER_SETTINGS_BUILD_METHOD_NAME = "build";
     String BSON_DOCUMENT_TO_JSON_METHOD_NAME = "toJson";
     String LIST_KEY_SET_METHOD_NAME = "keySet";
-
+    String UNKNOWN_PAYLOAD_TYPE = "Unknown";
 }
