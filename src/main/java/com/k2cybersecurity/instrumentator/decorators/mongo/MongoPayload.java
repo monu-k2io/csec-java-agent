@@ -2,6 +2,8 @@ package com.k2cybersecurity.instrumentator.decorators.mongo;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,63 +21,41 @@ class MongoPayload {
     private String payloadType = MongoConstants.UNKNOWN_PAYLOAD_TYPE;
 
     static class Parser {
-        Class<?> JsonWriterSettingsClass;
-        Object relaxedBuilder;
+        JSONParser parser;
 
         /**
-         * Initiates the JsonWritterSettings with relaxed mode
-         * @throws ClassNotFoundException
-         * @throws NoSuchMethodException
-         * @throws IllegalAccessException
-         * @throws InvocationTargetException
+         * Initiates the JSONParser
          */
-        Parser() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-            JsonWriterSettingsClass = Class.forName(MongoConstants.JSON_WRITER_SETTINGS_CLASS_NAME,false, Thread.currentThread().getContextClassLoader());
-            Class<?> JsonMode = Class.forName(MongoConstants.JSON_MODE_CLASS_NAME,false, Thread.currentThread().getContextClassLoader());
-
-            Method jsonModeValueOf = JsonMode.getMethod(MongoConstants.JSON_MODE_VALUE_OF_METHOD_NAME, String.class);
-            jsonModeValueOf.setAccessible(true);
-            Object outputModeEnum = jsonModeValueOf.invoke(null, MongoConstants.JSON_MODE_OUTPUT_MODE_RELAXED);
-
-            Method jsonBuilder = JsonWriterSettingsClass.getMethod(MongoConstants.JSON_WRITER_SETTINGS_BUILDER_METHOD_NAME);
-            jsonBuilder.setAccessible(true);
-            Object builder = jsonBuilder.invoke(null);
-
-            Method outputMode = builder.getClass().getMethod(MongoConstants.JSON_WRITER_SETTINGS_OUTPUT_MODE_METHOD_NAME, JsonMode);
-            outputMode.setAccessible(true);
-            builder = outputMode.invoke(builder, outputModeEnum);
-
-            Method build = builder.getClass().getMethod(MongoConstants.JSON_WRITER_SETTINGS_BUILD_METHOD_NAME);
-            build.setAccessible(true);
-            this.relaxedBuilder = build.invoke(builder);
+        Parser() {
+            parser = new JSONParser();
         }
 
         /**
          * Parses the bson object into 'relaxed' JSON.
          * @param payload
          * @return
-         * @throws ClassNotFoundException
+         * @throws ParseException
          * @throws NoSuchMethodException
          * @throws IllegalAccessException
          * @throws InvocationTargetException
          */
-        Object ParseBSONPayload(Object payload) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-            Method toJson = payload.getClass().getMethod(MongoConstants.BSON_DOCUMENT_TO_JSON_METHOD_NAME, this.JsonWriterSettingsClass);
+        Object ParseBSONPayload(Object payload) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ParseException {
+            Method toJson = payload.getClass().getMethod(MongoConstants.BSON_DOCUMENT_TO_JSON_METHOD_NAME);
             toJson.setAccessible(true);
-
-            return toJson.invoke(payload, this.relaxedBuilder);
+            String jsonString = (String) toJson.invoke(payload);
+            return parser.parse(jsonString);
         }
 
         /**
          * Parses the bson object list into list of 'relaxed' JSONArray.
          * @param payload
          * @return
-         * @throws ClassNotFoundException
+         * @throws ParseException
          * @throws NoSuchMethodException
          * @throws IllegalAccessException
          * @throws InvocationTargetException
          */
-        Object ParseBSONPayload(List<Object> payload) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        Object ParseBSONPayload(List<Object> payload) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ParseException {
             JSONArray list = new JSONArray();
             Object item = null;
             Iterator itr = payload.iterator();
