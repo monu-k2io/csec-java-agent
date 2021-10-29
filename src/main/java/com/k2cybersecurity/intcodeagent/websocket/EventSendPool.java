@@ -6,7 +6,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -58,9 +57,11 @@ public class EventSendPool {
 		executor.setThreadFactory(new ThreadFactory() {
 			@Override
 			public Thread newThread(Runnable r) {
-				return new Thread(Thread.currentThread().getThreadGroup(), r,
-						"K2-EventSender");
-			}
+                Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
+                        "K2-EventSender");
+                t.setDaemon(true);
+                return t;
+            }
 		});
 	}
 
