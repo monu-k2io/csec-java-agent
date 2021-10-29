@@ -44,18 +44,19 @@ public class Hooks {
 		 */
 
 
-		// Spring MVC
-		ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
+        // Spring MVC
+        ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
+        ANNOTATION_BASED_HOOKS.add("org.springframework.stereotype.Controller");
 
-		// Jersey
-		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
-		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
+        // Jersey
+        ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
+        ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
 
-		// Servlet
-		ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
+        // Servlet
+        ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
 
 
-		// Apache Wicket
+        // Apache Wicket
 		TYPE_BASED_HOOKS.put("org.apache.wicket.markup.html.WebPage", Collections.singletonList(null));
 
 		// SQL hooks
@@ -255,26 +256,28 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servletparametervalues");
 
 
-		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.null",
-				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
-		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.getWriter",
-				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
-		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.getOutputStream",
-				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
+        DECORATOR_ENTRY.put("javax.servlet.ServletResponse.null",
+                "com.k2cybersecurity.instrumentator.decorators.servletresponse");
+        DECORATOR_ENTRY.put("javax.servlet.ServletResponse.getWriter",
+                "com.k2cybersecurity.instrumentator.decorators.servletresponse");
+        DECORATOR_ENTRY.put("javax.servlet.ServletResponse.getOutputStream",
+                "com.k2cybersecurity.instrumentator.decorators.servletresponse");
 
-		// Spring MVC
-		DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.Mapping",
-				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+        // Spring MVC
+        DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.Mapping",
+                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+        DECORATOR_ENTRY.put("org.springframework.stereotype.Controller",
+                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
-		// Jersey
-		DECORATOR_ENTRY.put("javax.ws.rs.Path",
-				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
-				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+        // Jersey
+        DECORATOR_ENTRY.put("javax.ws.rs.Path",
+                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+        DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
+                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
-		// Servlet Annotation
-		DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
-				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+        // Servlet Annotation
+        DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
+                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		// Apache Wicket
 		DECORATOR_ENTRY.put("org.apache.wicket.markup.html.WebPage.null",

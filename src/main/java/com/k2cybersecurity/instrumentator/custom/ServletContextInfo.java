@@ -12,9 +12,6 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.Enumeration;
 
 public class ServletContextInfo {
@@ -48,6 +45,7 @@ public class ServletContextInfo {
     public static final String CLASSES_STR_1 = "/classes!";
     public static final String L_1 = "L1 : ";
     public static final String APPLICATION = "application";
+    public static final String CAUSE = " CAUSE :";
 
     @JsonIgnore
     private static ServletContextInfo instance;
@@ -123,7 +121,8 @@ public class ServletContextInfo {
             getMinorVersion = servletContext.getClass().getMethod(GET_MINOR_VERSION);
             getServletContextName = servletContext.getClass().getMethod(GET_SERVLET_CONTEXT_NAME);
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
+            logger.log(LogLevel.WARNING, ERROR + e.getMessage() + CAUSE + e.getCause(), ServletContextInfo.class.getName());
+            logger.log(LogLevel.DEBUG, ERROR, e, ServletContextInfo.class.getName());
         }
 
         try {
@@ -133,7 +132,8 @@ public class ServletContextInfo {
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
+            logger.log(LogLevel.WARNING, ERROR + e.getMessage() + CAUSE + e.getCause(), ServletContextInfo.class.getName());
+            logger.log(LogLevel.DEBUG, ERROR, e, ServletContextInfo.class.getName());
         }
 
 

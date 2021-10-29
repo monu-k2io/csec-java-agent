@@ -43,10 +43,12 @@ public class Dispatcher implements Runnable {
 	public static final String UPDATED_APPLICATION_INFO_POSTED = "Updated application info posted : ";
 	public static final char SEPARATOR = '.';
 	public static final String INSIDE_SET_REQUIRED_STACK_TRACE = "Inside setRequiredStackTrace : ";
-	public static final String STRING_COLON = " : ";
 
 	private static final Object deployedAppDetectionLock = new Object();
 	public static final String S_S = "%s-%s";
+	public static final String K_2_SERVICE_NAME = "K2_SERVICE_NAME";
+	public static final String SEPARATOR_COLON = ":";
+	public static final String SETTING_UP_USER_PROVIDED_NAME = "Setting up user provided name : ";
 	private HttpRequestBean httpRequestBean;
 	private AgentMetaData metaData;
 	private Object event;
@@ -121,7 +123,8 @@ public class Dispatcher implements Runnable {
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 //				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
 //				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
-				if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
+				if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().isEmpty() ||
+						(!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
 								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
 //					System.out.println("Sending out RXSS");
@@ -423,8 +426,19 @@ public class Dispatcher implements Runnable {
 				return false;
 			}
 
-//			System.out.println("Processed App Info : " + deployedApplication);
+
 			ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
+
+			String appNameByUser = System.getenv().get(K_2_SERVICE_NAME);
+			if (StringUtils.isNotBlank(appNameByUser)) {
+				if (applicationInfoBean.getServerInfo() != null && !applicationInfoBean.getServerInfo().getDeployedApplications().isEmpty()) {
+					appNameByUser = StringUtils.joinWith(SEPARATOR_COLON, deployedApplication.getAppName());
+				}
+				deployedApplication.setAppName(appNameByUser);
+				logger.log(LogLevel.INFO, SETTING_UP_USER_PROVIDED_NAME + appNameByUser, Dispatcher.class.getName());
+			}
+
+//			System.out.println("Processed App Info : " + deployedApplication);
 
 			applicationInfoBean.getServerInfo().setName(ServletContextInfo.getInstance().getServerInfo());
 

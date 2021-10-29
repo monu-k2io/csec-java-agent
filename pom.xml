@@ -44,10 +44,10 @@
 
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.10.1</version>
-		</dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.0</version>
+        </dependency>
 		<dependency>
 			<groupId>org.java-websocket</groupId>
 			<artifactId>Java-WebSocket</artifactId>
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.10.20</version>
+            <version>1.11.21</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.squareup.okhttp/okhttp -->
