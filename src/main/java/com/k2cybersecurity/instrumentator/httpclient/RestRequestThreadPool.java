@@ -2,9 +2,11 @@ package com.k2cybersecurity.instrumentator.httpclient;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
 
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RestRequestThreadPool {
@@ -86,6 +88,10 @@ public class RestRequestThreadPool {
             } catch (InterruptedException e) {
             }
         }
+    }
+
+    public int getQueueSize() {
+        return this.executor.getQueue().size();
     }
 
 }

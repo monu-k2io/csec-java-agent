@@ -30,6 +30,8 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private AtomicInteger httpRequestCount;
 
+	private Integer dsBackLog;
+
     private Set protectedVulnerabilties;
 
     public JAHealthCheck(String applicationUUID) {
@@ -57,6 +59,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventSentCount = jaHealthCheck.eventSentCount;
         this.httpRequestCount = jaHealthCheck.httpRequestCount;
         this.isHost = jaHealthCheck.isHost;
+		this.dsBackLog = jaHealthCheck.dsBackLog;
         logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
     }
 
@@ -200,4 +203,12 @@ public class JAHealthCheck extends AgentBasicInfo {
     public void setHttpRequestCount(Integer httpRequestCount) {
         this.httpRequestCount.set(httpRequestCount);
     }
+
+	public Integer getDsBackLog() {
+		return dsBackLog;
+	}
+
+	public void setDsBackLog(Integer dsBackLog) {
+		this.dsBackLog = dsBackLog;
+	}
 }
