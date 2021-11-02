@@ -31,7 +31,7 @@ class MongoPayload {
         }
 
         /**
-         * Parses the bson object into 'relaxed' JSON.
+         * Parses the bson object into JSON.
          * @param payload
          * @return
          * @throws ParseException
@@ -47,7 +47,7 @@ class MongoPayload {
         }
 
         /**
-         * Parses the bson object list into list of 'relaxed' JSONArray.
+         * Parses the bson object list into JSONArray.
          * @param payload
          * @return
          * @throws ParseException
@@ -79,11 +79,14 @@ class MongoPayload {
                 Method getPayload = args[streamingPayloadIndex].getClass().getMethod("getPayload");
                 getPayload.setAccessible(true);
                 List<Object> payload = (List<Object>) getPayload.invoke(args[streamingPayloadIndex]);
-                Method getPayloadName = args[streamingPayloadIndex].getClass().getMethod("getPayloadName");
-                getPayloadName.setAccessible(true);
-                String payloadName = (String) getPayloadName.invoke(args[streamingPayloadIndex]);
-                MongoPayload data = new MongoPayload(ParseBSONPayload(payload), payloadName);
-                return data;
+                try {
+                    Method getPayloadName = args[streamingPayloadIndex].getClass().getMethod("getPayloadName");
+                    getPayloadName.setAccessible(true);
+                    String payloadName = (String) getPayloadName.invoke(args[streamingPayloadIndex]);
+                    return new MongoPayload(ParseBSONPayload(payload), payloadName);
+                } catch (Exception e) {
+                    return new MongoPayload(ParseBSONPayload(payload));
+                }
             }
             return null;
         }
@@ -128,9 +131,8 @@ class MongoPayload {
     /**
      * returns a singleton BSONPayloadParser object
      * @return Parser
-     * @throws Exception
      */
-    static Parser getParser() throws Exception {
+    static Parser getParser() {
         if (parser == null) {
             parser = new Parser();
         }
