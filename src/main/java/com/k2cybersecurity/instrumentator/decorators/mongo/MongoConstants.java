@@ -20,6 +20,7 @@ public interface MongoConstants {
     };
 
     Map<String, String> MONGO_OPERATION_MAP = new HashMap<String, String>() {{
+        put(UNKNOWN_PAYLOAD_TYPE, UNKNOWN_PAYLOAD_TYPE);
         put("documents", "insert");
         put("updates", "update");
         put("deletes", "delete");
