@@ -181,7 +181,8 @@ class MongoPayload {
     public JSONObject getJSON() throws Exception{
         JSONObject obj = new JSONObject();
         obj.put(MongoConstants.PAYLOAD_HOLDER, this.payload);
-        obj.put(MongoConstants.PAYLOAD_TYPE_HOLDER, this.payloadType);
+        obj.put(MongoConstants.PAYLOAD_TYPE_HOLDER,
+                MongoConstants.MONGO_OPERATION_MAP.get(this.payloadType));
         return obj;
     }
 }

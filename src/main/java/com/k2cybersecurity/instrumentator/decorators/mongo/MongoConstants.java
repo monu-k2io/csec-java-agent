@@ -1,5 +1,8 @@
 package com.k2cybersecurity.instrumentator.decorators.mongo;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public interface MongoConstants {
     // This is an exhaustive list of operation types
     // we would be able to identify on from command arg
@@ -15,6 +18,22 @@ public interface MongoConstants {
             "mapreduce",
             "parallelCollectionScan"
     };
+
+    Map<String, String> MONGO_OPERATION_MAP = new HashMap<String, String>() {{
+        put("documents", "insert");
+        put("updates", "update");
+        put("deletes", "delete");
+        put ("aggregate", "aggregate");
+        put ("count", "count");
+        put ("createIndexes", "createIndexes");
+        put ("distinct", "distinct");
+        put ("drop", "drop");
+        put ("dropIndexes", "dropIndexes");
+        put ("find", "find");
+        put ("inline", "inline");
+        put ("mapreduce", "mapreduce");
+        put ("parallelCollectionScan", "parallelCollectionScan");
+    }};
 
     String PAYLOAD_HOLDER = "payload";
     String PAYLOAD_TYPE_HOLDER = "payloadType";
