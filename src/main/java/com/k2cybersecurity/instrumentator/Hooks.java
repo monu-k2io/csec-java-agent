@@ -139,7 +139,7 @@ public class Hooks {
 //		NAME_BASED_HOOKS.put("net.sf.saxon.style.StyleElement", Collections.singletonList("makeExpression"));
 		// XPath VTDXML
 		NAME_BASED_HOOKS.put("com.ximpleware.AutoPilot", Arrays.asList("declareVariableExpr", "evalXPath", "evalXPathToBoolean", "evalXPathToNumber", "evalXPathToString", "selectXPath"));
-		
+
 		// XQuery standard
 		NAME_BASED_HOOKS.put("net.sf.saxon.query.StaticQueryContext", Collections.singletonList("compileQuery"));
 		NAME_BASED_HOOKS.put("com.saxonica.xqj.SaxonXQPreparedExpression", Collections.singletonList("executeQuery"));
@@ -152,7 +152,7 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("oracle.xml.xquery.compiler.parser.antlr.runtime.ANTLRReaderStream", Collections.singletonList("load"));
 		// XQuery brackit
 		NAME_BASED_HOOKS.put("org.brackit.xquery.XQuery", Arrays.asList(null, "run"));
-		
+
 //		//NAME_BASED_HOOKS.put("net.xqj.basex.bin.G", Collections.singletonList("executeQuery"));
 //		TYPE_BASED_HOOKS.put("javax.xml.xquery.XQExpression", Arrays.asList("executeQuery"));
 //		TYPE_BASED_HOOKS.put("javax.xml.xquery.XQConnection", Arrays.asList("prepareExpression", "createExpression"));
@@ -186,18 +186,22 @@ public class Hooks {
         TYPE_BASED_HOOKS.put("java.net.Socket", Collections.singletonList("getOutputStream"));
 
         // NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT,
-        // Collections.singletonList("execute")); // Handle differently
+		// Collections.singletonList("execute")); // Handle differently
 
-        // JavaScript Injection
-        NAME_BASED_HOOKS.put("jdk.nashorn.api.scripting.NashornScriptEngine", Arrays.asList("evalImpl"));
-        NAME_BASED_HOOKS.put("com.oracle.truffle.polyglot.PolyglotContextImpl", Collections.singletonList("eval"));
-        NAME_BASED_HOOKS.put("org.mozilla.javascript.Context", Collections.singletonList("compileImpl"));
-        TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
+		// JavaScript Injection
+		NAME_BASED_HOOKS.put("jdk.nashorn.api.scripting.NashornScriptEngine", Arrays.asList("evalImpl"));
+		NAME_BASED_HOOKS.put("com.oracle.truffle.polyglot.PolyglotContextImpl", Collections.singletonList("eval"));
+		NAME_BASED_HOOKS.put("org.mozilla.javascript.Context", Collections.singletonList("compileImpl"));
+		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
 
 //		NAME_BASED_HOOKS.put("org.mozilla.javascript.Parser", Collections.singletonList("parse"));
 //		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
-		
-		
+
+
+		// JNDI hooks
+		TYPE_BASED_HOOKS.put("javax.naming.Context", Arrays.asList("lookup", "lookupLink"));
+
+
 		/**
 		 * ------------------------------------ Decorators
 		 * ------------------------------------------------
@@ -221,13 +225,13 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
 		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.write",
 				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
-		
-		
+
+
 		DECORATOR_ENTRY.put("javax.servlet.Filter.doFilter",
 				"com.k2cybersecurity.instrumentator.decorators.servletdofilter");
 		DECORATOR_ENTRY.put("javax.servlet.FilterChain.doFilter",
 				"com.k2cybersecurity.instrumentator.decorators.servletdofilter");
-		
+
 		DECORATOR_ENTRY.put("java.io.PrintWriter.write", "com.k2cybersecurity.instrumentator.decorators.printwriter");
 		DECORATOR_ENTRY.put("java.io.PrintWriter.newLine", "com.k2cybersecurity.instrumentator.decorators.printwriter");
 		DECORATOR_ENTRY.put("java.io.PrintWriter.println", "com.k2cybersecurity.instrumentator.decorators.printwriter");
@@ -390,7 +394,7 @@ public class Hooks {
 
 		// Forkexec
 		DECORATOR_ENTRY.put("java.lang.ProcessImpl.start", "com.k2cybersecurity.instrumentator.decorators.forkexec");
-		
+
 		// System exit
 		DECORATOR_ENTRY.put("java.lang.Shutdown.exit", "com.k2cybersecurity.instrumentator.decorators.systemexit");
 		DECORATOR_ENTRY.put("java.lang.Shutdown.halt", "com.k2cybersecurity.instrumentator.decorators.systemexit");
@@ -515,7 +519,7 @@ public class Hooks {
 		DECORATOR_ENTRY.put("io.zorba.api.XQuery.compile", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
 		DECORATOR_ENTRY.put("io.zorba.api.XQuery.iterator", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
 		DECORATOR_ENTRY.put("io.zorba.api.XQuery.execute", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
-		
+
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",
 				"com.k2cybersecurity.instrumentator.decorators.jettyhandle");
@@ -567,5 +571,9 @@ public class Hooks {
 //		DECORATOR_ENTRY.put("org.mozilla.javascript.Script.exec", "com.k2cybersecurity.instrumentator.decorators.jsinjection.rhino");
 //		NAME_BASED_HOOKS.put("org.mozilla.javascript.Parser", Collections.singletonList("parse"));
 //		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
+
+		// JNDI hooks
+		DECORATOR_ENTRY.put("javax.naming.Context.lookup", "com.k2cybersecurity.instrumentator.decorators.jndi");
+		DECORATOR_ENTRY.put("javax.naming.Context.lookupLink", "com.k2cybersecurity.instrumentator.decorators.jndi");
 	}
 }
