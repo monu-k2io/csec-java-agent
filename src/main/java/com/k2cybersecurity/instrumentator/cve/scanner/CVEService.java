@@ -20,9 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class CVEService implements Runnable {
@@ -168,14 +166,23 @@ public class CVEService implements Runnable {
 
     private List<CVEScanner> getLibScanDirs() {
         List<CVEScanner> scanners = new ArrayList<>();
-        List<String> libPaths = new ArrayList<>();
+        Set<String> libPaths = new HashSet<>();
         if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
             for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
                 if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR)) {
-                    libPaths.add(path);
+                    File jar = new File(path);
+                    try {
+                        libPaths.add(jar.toPath().toRealPath().toString());
+                    } catch (IOException e) {
+                    }
                 } else if (new File(path).isDirectory()) {
                     FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
-                            .forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
+                            .forEach(jarFile -> {
+                                try {
+                                    libPaths.add(jarFile.toPath().toRealPath().toString());
+                                } catch (IOException e) {
+                                }
+                            });
                 }
             }
         }
@@ -298,14 +305,23 @@ public class CVEService implements Runnable {
             }
         }
 
-        List<String> libPaths = new ArrayList<>();
+        Set<String> libPaths = new HashSet<>();
         if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
             for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
                 if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR)) {
-                    libPaths.add(path);
+                    File jar = new File(path);
+                    try {
+                        libPaths.add(jar.toPath().toRealPath().toString());
+                    } catch (IOException e) {
+                    }
                 } else if (new File(path).isDirectory()) {
                     FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
-                            .forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
+                            .forEach(jarFile -> {
+                                try {
+                                    libPaths.add(jarFile.toPath().toRealPath().toString());
+                                } catch (IOException e) {
+                                }
+                            });
                 }
             }
             libPaths.removeAll(appJarNames);
@@ -322,7 +338,7 @@ public class CVEService implements Runnable {
         return scanners;
     }
 
-    private CVEScanner createLibTmpDir(List<String> libPaths, String binaryName, String applicationUUID) {
+    private CVEScanner createLibTmpDir(Collection<String> libPaths, String binaryName, String applicationUUID) {
         File directory = new File(TMP_LIBS + applicationUUID);
         try {
             FileUtils.forceMkdir(directory);
