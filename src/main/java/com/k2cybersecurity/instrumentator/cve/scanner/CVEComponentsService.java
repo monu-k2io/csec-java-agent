@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,10 +69,19 @@ public class CVEComponentsService {
 		if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
 			for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
 				if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, "K2-JavaAgent-1.0.0-jar-with-dependencies.jar")) {
-					libPaths.add(path);
+					File jar = new File(path);
+					try {
+						libPaths.add(jar.toPath().toRealPath().toString());
+					} catch (IOException e) {
+					}
 				} else if (new File(path).isDirectory()) {
 					FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
-							.forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
+							.forEach(jarFile -> {
+								try {
+									libPaths.add(jarFile.toPath().toRealPath().toString());
+								} catch (IOException e) {
+								}
+							});
 				}
 			}
 		}
