@@ -62,27 +62,28 @@ public class Callbacks {
             }
         }
     }
-    
+
     private static void placeAdditionalTemplateData() {
-        String baseData = StringUtils.substring(ThreadLocalJNDILock.getInstance().getBuf().toString(), 
-            ThreadLocalJNDILock.getInstance().getStartPos(),
-            ThreadLocalJNDILock.getInstance().getEndPos()
-        );
-        
-        if (StringUtils.equals(ThreadLocalJNDILock.getInstance().getMappingValue(), baseData)) {
+        String baseData = StringUtils.substring(ThreadLocalJNDILock.getInstance().getBuf().toString(),
+                ThreadLocalJNDILock.getInstance().getStartPos(),
+                ThreadLocalJNDILock.getInstance().getEndPos());
+
+        if (StringUtils.isNoneBlank(ThreadLocalJNDILock.getInstance().getMappingValue(),
+                baseData)
+                && StringUtils.equals(ThreadLocalJNDILock.getInstance().getMappingValue().trim(), baseData.trim())) {
             return;
         }
 
-        ThreadLocalExecutionMap.getInstance().getMetaData().getUserDataTranslationMap().put( 
-            ThreadLocalJNDILock.getInstance().getMappingValue(), baseData
-        );
+        ThreadLocalExecutionMap.getInstance().getMetaData().getUserDataTranslationMap().put(
+                ThreadLocalJNDILock.getInstance().getMappingValue(), baseData);
     }
 
     private static void handleFileAccess(String reference, String className, String sourceString, String exectionId,
             String methodName) throws K2CyberSecurityException {
         placeAdditionalTemplateData();
         EventDispatcher.dispatch(new FileOperationalBean(reference, className,
-                sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName), VulnerabilityCaseType.FILE_OPERATION);
+                sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName),
+                VulnerabilityCaseType.FILE_OPERATION);
 
     }
 
@@ -94,7 +95,7 @@ public class Callbacks {
     }
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-                                Object returnVal, String exectionId) {
+            Object returnVal, String exectionId) {
         if (!ThreadLocalHttpMap.getInstance().isEmpty()
                 && ThreadLocalJNDILock.getInstance().isAcquired(obj, sourceString, exectionId)) {
             ThreadLocalJNDILock.getInstance().release(obj, sourceString, exectionId);
@@ -102,7 +103,7 @@ public class Callbacks {
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-                                 Throwable error, String exectionId) throws Throwable {
+            Throwable error, String exectionId) throws Throwable {
         if (!ThreadLocalHttpMap.getInstance().isEmpty()
                 && ThreadLocalJNDILock.getInstance().isAcquired(obj, sourceString, exectionId)) {
             ThreadLocalJNDILock.getInstance().release(obj, sourceString, exectionId);
