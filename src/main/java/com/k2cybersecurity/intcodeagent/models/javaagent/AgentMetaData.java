@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class AgentMetaData {
@@ -21,6 +23,8 @@ public class AgentMetaData {
 
     private boolean apiBlocked = false;
 
+    private Map<String, String> userDataTranslationMap;
+
     @JsonIgnore
     private StackTraceElement[] serviceTrace;
 
@@ -32,6 +36,7 @@ public class AgentMetaData {
     public AgentMetaData() {
         this.rciMethodsCalls = new JSONArray();
         this.ips = new HashSet<>();
+        this.userDataTranslationMap = new HashMap<>();
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
@@ -44,6 +49,7 @@ public class AgentMetaData {
         this.serviceTrace = agentMetaData.serviceTrace;
         this.ips = new HashSet<>(agentMetaData.ips);
         this.apiBlocked = agentMetaData.apiBlocked;
+        this.userDataTranslationMap = new HashMap<>(agentMetaData.userDataTranslationMap);
     }
 
 	@Override
@@ -123,5 +129,13 @@ public class AgentMetaData {
 
     public void setApiBlocked(boolean apiBlocked) {
         this.apiBlocked = apiBlocked;
+    }
+
+    public Map<String, String> getUserDataTranslationMap() {
+        return userDataTranslationMap;
+    }
+
+    public void setUserDataTranslationMap(Map<String, String> userDataTranslationMap) {
+        this.userDataTranslationMap = userDataTranslationMap;
     }
 }

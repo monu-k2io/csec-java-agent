@@ -14,6 +14,14 @@ public class ThreadLocalJNDILock {
 
     private String eId = StringUtils.EMPTY;
 
+    private StringBuilder buf = null;
+
+    private String mappingValue = StringUtils.EMPTY;
+
+    private int startPos = -1;
+
+    private int endPos = -1;
+
     private static ThreadLocal<ThreadLocalJNDILock> instance = new ThreadLocal<ThreadLocalJNDILock>() {
         @Override
         protected ThreadLocalJNDILock initialValue() {
@@ -45,10 +53,13 @@ public class ThreadLocalJNDILock {
                 && StringUtils.equals(sourceSignature, this.sourceSignature)
                 && StringUtils.equals(eId, this.eId)) {
             lock.release();
-            ThreadLocalSSRFMap.getInstance().cleanUp();
             this.takenBy = null;
             this.sourceSignature = StringUtils.EMPTY;
             this.eId = StringUtils.EMPTY;
+            buf = null;
+            mappingValue = StringUtils.EMPTY;
+            startPos = -1;
+            endPos = -1;
         }
     }
 
@@ -66,10 +77,13 @@ public class ThreadLocalJNDILock {
 
     public void resetLock() {
         lock = new Semaphore(1);
-        ThreadLocalSSRFMap.getInstance().cleanUp();
         takenBy = null;
         sourceSignature = StringUtils.EMPTY;
         eId = StringUtils.EMPTY;
+        buf = null;
+        mappingValue = StringUtils.EMPTY;
+        startPos = -1;
+        endPos = -1;
     }
 
     public Object isTakenBy() {
@@ -84,4 +98,38 @@ public class ThreadLocalJNDILock {
         return eId;
     }
 
+    public StringBuilder getBuf() {
+        return buf;
+    }
+
+    public void setBuf(StringBuilder buf) {
+        this.buf = buf;
+    }
+
+    public String getMappingValue() {
+        return mappingValue;
+    }
+
+    public void setMappingValue(String mappingValue) {
+        this.mappingValue = mappingValue;
+    }
+
+    public int getStartPos() {
+        return startPos;
+    }
+
+    public void setStartPos(int startPos) {
+        this.startPos = startPos;
+    }
+
+    public int getEndPos() {
+        return endPos;
+    }
+
+    public void setEndPos(int endPos) {
+        this.endPos = endPos;
+    }
+
+
+    
 }
