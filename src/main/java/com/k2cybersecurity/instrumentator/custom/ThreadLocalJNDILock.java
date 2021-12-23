@@ -52,14 +52,7 @@ public class ThreadLocalJNDILock {
         if (this.takenBy != null && takenBy != null && this.takenBy.hashCode() == takenBy.hashCode()
                 && StringUtils.equals(sourceSignature, this.sourceSignature)
                 && StringUtils.equals(eId, this.eId)) {
-            lock.release();
-            this.takenBy = null;
-            this.sourceSignature = StringUtils.EMPTY;
-            this.eId = StringUtils.EMPTY;
-            buf = null;
-            mappingValue = StringUtils.EMPTY;
-            startPos = -1;
-            endPos = -1;
+            resetLock();
         }
     }
 
@@ -75,8 +68,8 @@ public class ThreadLocalJNDILock {
         }
     }
 
-    public void resetLock() {
-        lock = new Semaphore(1);
+    private void resetLock() {
+        lock.release();
         takenBy = null;
         sourceSignature = StringUtils.EMPTY;
         eId = StringUtils.EMPTY;
