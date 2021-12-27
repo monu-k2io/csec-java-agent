@@ -55,13 +55,13 @@ public class CVEService implements Runnable {
 
     private static final String BASH_COMMAND = "bash";
 
-    private static final String TMP_LOCALCVESERVICE_DIST_STARTUP_SH = "/tmp/localcveservice/dist/startup.sh";
+    private static final String TMP_LOCALCVESERVICE_DIST_STARTUP_SH = "/tmp/%s/localcveservice/dist/startup.sh";
 
-    private static final String TMP_LOCALCVESERVICE_PATH = "/tmp/localcveservice";
+    private static final String TMP_LOCALCVESERVICE_PATH = "/tmp/%s/localcveservice";
 
     private static final String CVE_SERVICE_TAR_DOESN_T_EXISTS = "CVE-Service Tar doesn't exists.";
 
-    public static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
+    public static final String TMP_LOCALCVESERVICE_TAR = "/tmp/%s/localcveservice.tar";
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR = "K2-JavaAgent-1.0.0-jar-with-dependencies.jar";
@@ -96,7 +96,7 @@ public class CVEService implements Runnable {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n"
-            + "dependencycheck.command: sh /tmp/localcveservice/dist/dependency-check.sh\r\n"
+            + "dependencycheck.command: sh /tmp/%s/localcveservice/dist/dependency-check.sh\r\n"
             + "# connecting back to k2agent.\r\n" + "k2agent.websocket: ws://%s:54321/\r\n" + "k2agent.nodeId: %s\r\n"
             + "k2agent.identifier.kind: %s\r\n" + "k2agent.identifier.id: %s\r\n"
             + "#----- following are file scan specific options\r\n" + "k2agent.scan.mode: file\r\n"
@@ -106,12 +106,12 @@ public class CVEService implements Runnable {
     @Override
     public void run() {
         try {
-            File cveTar = new File(TMP_LOCALCVESERVICE_TAR);
+            File cveTar = new File(String.format(TMP_LOCALCVESERVICE_TAR, K2Instrumentator.APPLICATION_UUID));
 
             int retry = 3;
             boolean downlaoded = false;
             while (!downlaoded) {
-                downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
+                downlaoded = downloadCVEJar(cveTar, String.format(TMP_LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
                 retry--;
                 if (retry == 0) {
                     return;
@@ -125,10 +125,10 @@ public class CVEService implements Runnable {
                 scanDirs = getAllScanDirs();
             }
             for (CVEScanner scanner : scanDirs) {
-                File inputYaml = createServiceYml(TMP_LOCALCVESERVICE_PATH, nodeId, scanner.getAppName(),
+                File inputYaml = createServiceYml(nodeId, scanner.getAppName(),
                         scanner.getAppSha256(), scanner.getDir(),
                         K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv());
-                List<String> paramList = Arrays.asList(SETSID, BASH_COMMAND, TMP_LOCALCVESERVICE_DIST_STARTUP_SH,
+                List<String> paramList = Arrays.asList(SETSID, BASH_COMMAND, String.format(TMP_LOCALCVESERVICE_DIST_STARTUP_SH, K2Instrumentator.APPLICATION_UUID),
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
                 Process process = processBuilder.start();
@@ -154,7 +154,7 @@ public class CVEService implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            deleteAllComponents(cveTar, TMP_LOCALCVESERVICE_PATH);
+            deleteAllComponents();
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEService.class.getName());
         } catch (Throwable e) {
@@ -197,12 +197,7 @@ public class CVEService implements Runnable {
         return scanners;
     }
 
-    protected void deleteAllComponents(File cveTar, String cveDir) {
-        try {
-            FileUtils.forceDelete(new File(cveDir));
-        } catch (IOException e) {
-        }
-
+    protected void deleteAllComponents() {
         try {
             FileUtils.forceDelete(new File(TMP_LIBS + K2Instrumentator.APPLICATION_UUID));
         } catch (IOException e) {
@@ -225,6 +220,11 @@ public class CVEService implements Runnable {
         boolean download = false;
         if (downloadTarBundle || !cveTar.exists()) {
             FileUtils.deleteQuietly(cveTar);
+            File cveBaseDir = cveTar.getParentFile();
+            if (!cveBaseDir.exists() || !cveBaseDir.isDirectory()) {
+                FileUtils.deleteQuietly(cveBaseDir);
+                cveBaseDir.mkdirs();
+            }
             download = FtpClient.downloadFile(cveTar.getName(), cveTar.getAbsolutePath());
             if (!download) {
                 logger.log(LogLevel.ERROR, "Unable to download Local CVE Service tar from IC", CVEService.class.getName());
@@ -277,11 +277,11 @@ public class CVEService implements Runnable {
 
     }
 
-    protected File createServiceYml(String cveServicePath, String nodeId, String appName, String appSha256,
+    protected File createServiceYml(String nodeId, String appName, String appSha256,
                                     String scanPath, String applicationUUID, Boolean env) throws IOException {
-        String yaml = String.format(YML_TEMPLATE, K2Instrumentator.hostip, nodeId, kind, id, appName, applicationUUID, appSha256,
+        String yaml = String.format(YML_TEMPLATE, K2Instrumentator.APPLICATION_UUID, K2Instrumentator.hostip, nodeId, kind, id, appName, applicationUUID, appSha256,
                 scanPath, env);
-        File yml = new File(TMP_DIR, SERVICE_INPUT_YML);
+        File yml = new File(Paths.get(TMP_DIR, K2Instrumentator.APPLICATION_UUID).toFile(), SERVICE_INPUT_YML);
         logger.log(LogLevel.INFO, INPUT_YML_LOG + yaml, CVEService.class.getName());
         FileUtils.write(yml, yaml, StandardCharsets.UTF_8);
         return yml;

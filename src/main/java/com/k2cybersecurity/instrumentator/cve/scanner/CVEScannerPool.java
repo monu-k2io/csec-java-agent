@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.cve.scanner;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
@@ -62,7 +63,7 @@ public class CVEScannerPool {
 			}
 		});
 
-		File cveTar = new File(CVEService.TMP_LOCALCVESERVICE_TAR);
+        File cveTar = new File(String.format(CVEService.TMP_LOCALCVESERVICE_TAR, K2Instrumentator.APPLICATION_UUID));
 		if (FileUtils.deleteQuietly(cveTar)) {
 			logger.log(LogLevel.INFO, "Stale CVE service bundle deleted.", CVEScannerPool.class.getName());
 		} else {
