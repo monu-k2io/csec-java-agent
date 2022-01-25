@@ -17,15 +17,20 @@ public class WSClient extends WebSocketClient {
 
 	private static WSClient instance;
 
-	private WSClient() throws URISyntaxException, InterruptedException {
+	private boolean isConnected = false;
+
+	private WSClient() throws URISyntaxException {
 		super(new URI(String.format("ws://%s:%s", K2Instrumentator.hostip, 54321)));
         this.setTcpNoDelay(true);
+	}
+
+	public void openConnection() throws InterruptedException {
 		logger.log(LogLevel.INFO, "Creating WSock connection to : " + K2Instrumentator.hostip,
 				WSClient.class.getName());
 		if (!connectBlocking()) {
 			logger.log(LogLevel.SEVERE, "WSock connection to " + K2Instrumentator.hostip + " failed",
 					WSClient.class.getName());
-			throw new InterruptedException("Unable to connect K2 Agent. Initial connect failed.");
+			throw new InterruptedException("Unable to connect K2 Agent. Connection failed.");
 		}
 	}
 
@@ -39,6 +44,7 @@ public class WSClient extends WebSocketClient {
 //		Agent.jarPathSet.clear();
 //		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
 //				WSClient.class.getName());
+		isConnected = true;
 		logger.log(LogLevel.INFO, "Application info posted : " + K2Instrumentator.APPLICATION_INFO_BEAN,
 				WSClient.class.getName());
 		AgentUtils.getInstance().resetCVEServiceFailCount();
@@ -57,6 +63,7 @@ public class WSClient extends WebSocketClient {
 
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
+		isConnected = false;
 		logger.log(LogLevel.WARNING, "Connection closed by " + (remote ? "remote peer." : "local.") + " Code: " + code
 				+ " Reason: " + reason, WSClient.class.getName());
 	}
@@ -82,7 +89,7 @@ public class WSClient extends WebSocketClient {
 	 * @throws URISyntaxException
 	 * @throws InterruptedException
 	 */
-	public static WSClient getInstance() throws URISyntaxException, InterruptedException {
+	public static WSClient getInstance() throws URISyntaxException {
 		if (instance == null) {
 			instance = new WSClient();
 		}
@@ -97,21 +104,18 @@ public class WSClient extends WebSocketClient {
 	public static WSClient reconnectWSClient() throws URISyntaxException, InterruptedException {
 		logger.log(LogLevel.WARNING, "Reconnecting with IC. Open status: " + instance.isOpen(),
 				WSClient.class.getName());
-		boolean reconnectStatus = false;
 		if (instance != null) {
 			instance.closeBlocking();
-			try {
-				reconnectStatus = instance.reconnectBlocking();
-			} catch (Throwable e) {
-				reconnectStatus = false;
-			}
 		}
-		if (!reconnectStatus) {
-			if (instance != null) {
-				instance.closeBlocking();
-			}
-			instance = new WSClient();
-		}
+		instance = new WSClient();
+		instance.openConnection();
 		return instance;
+	}
+
+	public static boolean isConnected() {
+		if (instance != null) {
+			return instance.isConnected;
+		}
+		return false;
 	}
 }
