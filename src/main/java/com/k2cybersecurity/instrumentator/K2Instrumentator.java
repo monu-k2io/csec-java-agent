@@ -123,6 +123,8 @@ public class K2Instrumentator {
                 }
             }
             if (!WSClient.isConnected()) {
+                logger.log(LogLevel.SEVERE, "WS client connection failed even after 7 retries!!! EXITING", K2Instrumentator.class.getName());
+                System.err.println("[K2-JA] Process connection failed!!! Please ensure k2agent is up and running.");
                 return false;
             }
 
