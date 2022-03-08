@@ -23,6 +23,7 @@ public class K2RequestIdentifier {
     }
 
     public K2RequestIdentifier(K2RequestIdentifier k2RequestIdentifierInstance) {
+        this.apiRecordId = (StringUtils.isNotBlank(k2RequestIdentifierInstance.apiRecordId)) ? new String(k2RequestIdentifierInstance.apiRecordId) : null;
         this.refId = (StringUtils.isNotBlank(k2RequestIdentifierInstance.refId)) ? new String(k2RequestIdentifierInstance.refId) : null;
         this.refValue = (StringUtils.isNotBlank(k2RequestIdentifierInstance.refValue)) ? new String(k2RequestIdentifierInstance.refValue) : null;
         this.k2Request = (k2RequestIdentifierInstance.k2Request != null) ? new Boolean(k2RequestIdentifierInstance.k2Request) : null;
