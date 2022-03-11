@@ -1,10 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.jndi;
 
-import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalJNDILock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
@@ -64,6 +60,9 @@ public class Callbacks {
     }
 
     private static void placeAdditionalTemplateData() {
+        if (ThreadLocalJNDILock.getInstance().getBuf() == null) {
+            return;
+        }
         String baseData = StringUtils.substring(ThreadLocalJNDILock.getInstance().getBuf().toString(),
                 ThreadLocalJNDILock.getInstance().getStartPos(),
                 ThreadLocalJNDILock.getInstance().getEndPos());
