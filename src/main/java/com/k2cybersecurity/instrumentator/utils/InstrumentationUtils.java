@@ -17,10 +17,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.lang.instrument.Instrumentation;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -385,18 +382,6 @@ public class InstrumentationUtils {
 
     public static void setIAST(Boolean iAST) {
         IAST = iAST;
-    }
-
-    public static void retransformHookedClasses(Instrumentation instrumentation) {
-        for (Pair<String, ClassLoader> pair : new ArrayList<>(AgentUtils.getInstance().getTransformedClasses())) {
-            try {
-                Class klass = Class.forName(pair.getLeft(), false, pair.getRight());
-                instrumentation.retransformClasses(klass);
-            } catch (Throwable e) {
-                logger.log(LogLevel.SEVERE, "Error while retransformHookedClasses : ", e,
-                        InstrumentationUtils.class.getName());
-            }
-        }
     }
 
 }

@@ -5,7 +5,6 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -33,20 +32,28 @@ public class Callbacks {
 //					System.out.println(String.format("Entry inside lock : SSRF : %s : %s : %s", className, methodName, obj));
 
                     if (httpHost == null) {
-                        ClassLoader classLoader = AgentUtils.getInstance().getClassLoaderRecord().get("org.apache.http.HttpHost");
-                        if (classLoader != null) {
-                            httpHost = classLoader.loadClass("org.apache.http.HttpHost");
+                        try {
+                            ClassLoader classLoader = args[0].getClass().getClassLoader();
+                            if (classLoader != null) {
+                                httpHost = classLoader.loadClass("org.apache.http.HttpHost");
+                            }
+                            classLoader = null;
+                        } catch (ClassNotFoundException ignored) {
                         }
                     }
 
-					if (httpUriRequest == null) {
-						ClassLoader classLoader = AgentUtils.getInstance().getClassLoaderRecord().get("org.apache.http.client.methods.HttpUriRequest");
-						if (classLoader != null) {
-							httpUriRequest = classLoader.loadClass("org.apache.http.client.methods.HttpUriRequest");
-						}
-					}
+                    if (httpUriRequest == null) {
+                        try {
+                            ClassLoader classLoader = args[0].getClass().getClassLoader();
+                            if (classLoader != null) {
+                                httpUriRequest = classLoader.loadClass("org.apache.http.client.methods.HttpUriRequest");
+                            }
+                            classLoader = null;
+                        } catch (ClassNotFoundException ignored) {
+                        }
+                    }
 
-					if (httpHost != null && httpHost.isInstance(args[0])) {
+                    if (httpHost != null && httpHost.isInstance(args[0])) {
                         Method getRequestLine = args[1].getClass().getMethod("getRequestLine");
                         getRequestLine.setAccessible(true);
                         Object requestLine = getRequestLine.invoke(args[1]);
