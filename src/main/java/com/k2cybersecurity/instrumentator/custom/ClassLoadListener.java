@@ -8,7 +8,6 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class ClassLoadListener implements AgentBuilder.Listener {
 
@@ -42,8 +41,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final JavaModule module,
 			final boolean loaded,
 			final DynamicType dynamicType) {
-		AgentUtils.getInstance().getTransformedClasses().add(Pair.of(typeDescription.getName(), classLoader));
-		AgentUtils.getInstance().createProtectedVulnerabilties(typeDescription, classLoader);
+//		AgentUtils.getInstance().createProtectedVulnerabilties(typeDescription, classLoader);
 //		System.out.println("Transformed class : " + typeDescription.getName());
 		logger.log(LogLevel.INFO, String.format(TRANSFORMED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
 	}
@@ -69,7 +67,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 		try {
 			ThreadLocalTransformationLock.getInstance().release(typeName);
 
-			AgentUtils.getInstance().putClassloaderRecord(typeName, classLoader);
+//			AgentUtils.getInstance().putClassloaderRecord(typeName, classLoader);
 //			logger.log(LogLevel.DEBUG, String.format(COMPLETED_CLASS_S, typeName), ClassLoadListener.class.getName());
 		} catch (Throwable e){
 //			System.out.println("Error while registering classloader : " + typeName + " : " + classLoader + " : " + e.getMessage() + " : " + e.getCause());

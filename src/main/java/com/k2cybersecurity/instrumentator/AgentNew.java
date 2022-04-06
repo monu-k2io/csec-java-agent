@@ -1,22 +1,18 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
@@ -61,23 +57,27 @@ public class AgentNew {
                         InstrumentationUtils.shutdownLogic(false);
                     }, "k2-shutdown-hook"));
 
-                    Set<Class> typeBasedClassSet = new HashSet<>();
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
-                            AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
-                        } else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
-                            typeBasedClassSet.add(aClass);
-                        }
-                    }
+//                    Set<Class> typeBasedClassSet = new HashSet<>();
+//                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
+//                        if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
+//                            AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
+//                        } else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
+//                            typeBasedClassSet.add(aClass);
+//                        }
+//                    }
 
                     /**
                      * IMPORTANT : Don't touch this shit until & unless very very necessary.
                      */
                     AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
-                            .ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
                             .disableClassFormatChanges()
+                            .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                            .with(AgentBuilder.RedefinitionStrategy.DiscoveryStrategy.Reiterating.INSTANCE)
+                            .with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+                            .with(new ClassLoadListener())
+                            .ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
+
 //									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-                            .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE)
 //					.with(AgentBuilder.CircularityLock.Inactive.INSTANCE)
 //					.with(new AgentBuilder.CircularityLock.Global())
 //					.with(AgentBuilder.LambdaInstrumentationStrategy.ENABLED)
@@ -102,7 +102,7 @@ public class AgentNew {
                     resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
 
                     // Checks for type based classes to hook
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
+/*                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
                         if (instrumentation.isModifiableClass(aClass)) {
                             for (Class typeClass : typeBasedClassSet) {
                                 if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
@@ -113,7 +113,9 @@ public class AgentNew {
                             }
                         }
                     }
-                    retransformHookedClasses(instrumentation);
+                    retransformHookedClasses(instrumentation);*/
+
+
                 } catch (Throwable e) {
                     System.err.println("[K2-JA] Process initialization failed!!! Please find the error in /tmp/K2-Instrumentation.err");
                     try {
