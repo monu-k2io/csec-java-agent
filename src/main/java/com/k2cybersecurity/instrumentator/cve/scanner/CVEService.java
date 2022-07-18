@@ -268,9 +268,10 @@ public class CVEService implements Runnable {
             return true;
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEService.class.getName());
-            FileUtils.deleteQuietly(cveTar);
             logger.log(LogLevel.WARNING,
                     CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEService.class.getName());
+        } finally {
+            FileUtils.deleteQuietly(cveTar);
         }
 
         return false;
