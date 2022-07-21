@@ -155,6 +155,7 @@ public class CVEService implements Runnable {
                 }
             }
             deleteAllComponents();
+            TimeUnit.SECONDS.sleep(30);
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEService.class.getName());
         } catch (Throwable e) {
