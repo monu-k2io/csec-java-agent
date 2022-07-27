@@ -38,7 +38,7 @@ public class HealthCheckScheduleThread {
 
 					K2Instrumentator.JA_HEALTH_CHECK.setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
-					if (WSClient.getInstance().isOpen()) {
+					if (WSClient.isConnected()) {
 						InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);
                         WSClient.getInstance().send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
                         K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
@@ -49,7 +49,7 @@ public class HealthCheckScheduleThread {
 						try {
 							WSClient.reconnectWSClient();
 							TimeUnit.SECONDS.sleep(5);
-							if (WSClient.getInstance().isOpen()) {
+							if (WSClient.isConnected()) {
                                 logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.",
                                         HealthCheckScheduleThread.class.getName());
 								InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);

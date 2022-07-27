@@ -559,4 +559,6 @@ public interface IAgentConstants {
     String AGENT_POLICY_PARAM_APPLIED_S = "Agent Policy parameters applied : %s";
 
     String K2_API_CALLER = "K2-API-CALLER";
+
+	int NUMBER_OF_RETRIES = 7;
 }

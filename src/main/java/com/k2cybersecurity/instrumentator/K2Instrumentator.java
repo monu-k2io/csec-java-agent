@@ -1,6 +1,5 @@
 package com.k2cybersecurity.instrumentator;
 
-import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -19,7 +18,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.HttpURLConnection;
@@ -31,8 +31,8 @@ import java.nio.file.Files;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
@@ -69,54 +69,75 @@ public class K2Instrumentator {
 	}
 
 	public static boolean init(Boolean isDynamicAttach) {
-		K2Instrumentator.isDynamicAttach = isDynamicAttach;
+        try {
+            K2Instrumentator.isDynamicAttach = isDynamicAttach;
 //		 ConfigK2Logs.getInstance().initializeLogs();
-		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
-		isECSEnv = ApplicationInfoUtils.isECSEnv();
-		
-		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+            isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+            isECSEnv = ApplicationInfoUtils.isECSEnv();
 
-		if(APPLICATION_INFO_BEAN == null) {
-			return false;
-		}
-		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
+            APPLICATION_INFO_BEAN = createApplicationInfoBean();
 
-		
+            if (APPLICATION_INFO_BEAN == null) {
+                return false;
+            }
+            JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
+
+
 //		System.out.println("Env variables in container : ");
 //		Map<String, String> allEnv = System.getenv();
 //		allEnv.forEach((k, v) -> System.out.println(k + " : " + v));
-		
-		if (StringUtils.isNotBlank(System.getenv("K2_HOST_IP"))) {
-			hostip=System.getenv("K2_HOST_IP");
-		} else if(isk8sEnv) {
-			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
-		} else if (isECSEnv) {
-			hostip = "k2-service.k2-ns";
-		} else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
-			hostip = InetAddress.getLoopbackAddress().getHostAddress();
-		}else {
-			try {
-				hostip = ApplicationInfoUtils.getDefaultGateway();
-			} catch (IOException e) {
-				logger.log(LogLevel.ERROR, ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY, e,
-						K2Instrumentator.class.getName());
-				return false;
-			}
-		}
-		try {
-			WSClient.getInstance();
-		} catch (Throwable e) {
-			logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-					K2Instrumentator.class.getName());
-			return false;
-		}
 
-		HealthCheckScheduleThread.getInstance();
-		boolean isWorking = eventWritePool();
+            if (StringUtils.isNotBlank(System.getenv("K2_HOST_IP"))) {
+                hostip = System.getenv("K2_HOST_IP");
+            } else if (isk8sEnv) {
+                hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
+            } else if (isECSEnv) {
+                hostip = "k2-service.k2-ns";
+            } else if (APPLICATION_INFO_BEAN.getIdentifier().getIsHost()) {
+                hostip = InetAddress.getLoopbackAddress().getHostAddress();
+            } else {
+                try {
+                    hostip = ApplicationInfoUtils.getDefaultGateway();
+                } catch (IOException e) {
+                    logger.log(LogLevel.ERROR, ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY, e,
+                            K2Instrumentator.class.getName());
+                    return false;
+                }
+            }
+            int retries = NUMBER_OF_RETRIES;
+            WSClient.getInstance().openConnection();
+            while (retries > 0) {
+                try {
+                    if (!WSClient.isConnected()) {
+                        retries--;
+                        int timeout = (NUMBER_OF_RETRIES - retries);
+                        logger.log(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), K2Instrumentator.class.getName());
+                        TimeUnit.MINUTES.sleep(timeout);
+                        WSClient.reconnectWSClient();
+                    } else {
+                        break;
+                    }
+                } catch (Throwable e) {
+                    logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
+                            K2Instrumentator.class.getName());
+                }
+            }
+            if (!WSClient.isConnected()) {
+                logger.log(LogLevel.SEVERE, "WS client connection failed even after 7 retries!!! EXITING", K2Instrumentator.class.getName());
+                System.err.println("[K2-JA] Process connection failed!!! Please ensure k2agent is up and running.");
+                return false;
+            }
+
+            HealthCheckScheduleThread.getInstance();
+            boolean isWorking = eventWritePool();
 
 
-		System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
-		return isWorking;
+            System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
+            return isWorking;
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
+            return false;
+        }
 	}
 
 	private static boolean eventWritePool() {
