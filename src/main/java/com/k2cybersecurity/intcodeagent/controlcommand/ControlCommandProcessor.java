@@ -3,10 +3,8 @@ package com.k2cybersecurity.intcodeagent.controlcommand;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.httpclient.RestRequestProcessor;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.CommonUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -19,7 +17,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -137,31 +134,6 @@ public class ControlCommandProcessor implements Runnable {
                     logger.log(LogLevel.SEVERE, ERROR_IN_EVENT_RESPONSE, e, ControlCommandProcessor.class.getSimpleName());
                 }
                 break;
-            case IntCodeControlCommand.START_VULNERABILITY_SCAN:
-                boolean fullReScanning = false;
-                boolean downloadTarBundle = false;
-
-                if (controlCommand.getArguments().size() == 3) {
-                    fullReScanning = Boolean.parseBoolean(controlCommand.getArguments().get(1));
-                    downloadTarBundle = Boolean.parseBoolean(controlCommand.getArguments().get(2));
-                }
-                logger.log(LogLevel.INFO, String.format(
-                        "Starting K2 Vulnerability scanner on this instance : %s :: Full Rescan : %s :: Download tar bundle : %s",
-                        controlCommand.getArguments().get(0), fullReScanning, downloadTarBundle),
-                        ControlCommandProcessor.class.getSimpleName());
-                // This essentially mean to clear the scanned application entries.
-                if (fullReScanning) {
-                    AgentUtils.getInstance().getScannedDeployedApplications().clear();
-                    AgentUtils.getInstance().resetCVEServiceFailCount();
-                }
-
-                if (AgentUtils.getInstance().getCVEServiceFailCount() >= 2) {
-                    logger.log(LogLevel.WARNING, "CVE service failed for 2 times already. Discarding the scan request.", ControlCommandProcessor.class.getName());
-                    return;
-                }
-                Pair<String, String> kindId = CommonUtils.getKindIdPair(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier(), controlCommand.getArguments().get(0));
-                CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), kindId.getKey(), kindId.getValue(), downloadTarBundle, false, fullReScanning);
-                break;
             case IntCodeControlCommand.FUZZ_REQUEST:
                 logger.log(LogLevel.DEBUG, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
@@ -176,7 +148,6 @@ public class ControlCommandProcessor implements Runnable {
                 try {
                     AgentUtils.getInstance().setAgentPolicy(
                             new ObjectMapper().readValue(controlCommand.getArguments().get(0), AgentPolicy.class));
-                    AgentUtils.getInstance().enforcePolicy();
                     logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                             AgentUtils.getInstance().getAgentPolicy()), ControlCommandProcessor.class.getName());
                 } catch (JsonProcessingException e) {
