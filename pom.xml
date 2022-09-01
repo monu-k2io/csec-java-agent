@@ -139,7 +139,7 @@
 		</resources>
 
 		<plugins>
-			<!--<plugin>
+			<plugin>
 				<groupId>com.k2cybersecurity</groupId>
 				<artifactId>k2-decorator-copy-plugin</artifactId>
 				<version>1.0</version>
@@ -155,7 +155,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>-->
+			</plugin>
 
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
