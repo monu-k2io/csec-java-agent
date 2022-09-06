@@ -1,9 +1,7 @@
 package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.instrumentator.AgentNew;
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
-import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -17,7 +15,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -89,10 +86,6 @@ public class AgentUtils {
 
 	private CollectorInitMsg initMsg = null;
 
-	private boolean cveEnvScanCompleted = false;
-
-	private AtomicInteger cveServiceFailCount = new AtomicInteger(0);
-
 	private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
 
 	private AgentUtils() {
@@ -119,14 +112,6 @@ public class AgentUtils {
 			}
 		}
 		return instance;
-	}
-
-	public boolean isCveEnvScanCompleted() {
-		return cveEnvScanCompleted;
-	}
-
-	public void setCveEnvScanCompleted(boolean cveEnvScanCompleted) {
-		this.cveEnvScanCompleted = cveEnvScanCompleted;
 	}
 
 	public boolean isAgentActive() {
@@ -163,18 +148,6 @@ public class AgentUtils {
 
 	public void resetOutboundHttpConnectionId() {
 		this.outboundHttpConnectionId.set(1000);
-	}
-
-	public int incrementCVEServiceFailCount() {
-		return this.cveServiceFailCount.incrementAndGet();
-	}
-
-	public void resetCVEServiceFailCount() {
-		this.cveServiceFailCount.set(0);
-	}
-
-	public int getCVEServiceFailCount() {
-		return this.cveServiceFailCount.get();
 	}
 
 //	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
@@ -576,15 +549,6 @@ public class AgentUtils {
 
     public void setAgentPolicyParameters(AgentPolicyIPBlockingParameters agentPolicyParameters) {
         this.agentPolicyParameters = agentPolicyParameters;
-    }
-
-    public void enforcePolicy() {
-		if(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getIastMode().getStaticScanning().getEnabled() && !AgentUtils.getInstance().isCveEnvScanCompleted()){
-			//Run CVE scan on ENV
-			Pair<String, String> kindId = CommonUtils.getKindIdPair(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier(), AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId());
-			CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), kindId.getKey(), kindId.getValue(), false, true, false);
-			AgentUtils.getInstance().setCveEnvScanCompleted(true);
-		}
     }
 
     public void enforcePolicyParameters() {
