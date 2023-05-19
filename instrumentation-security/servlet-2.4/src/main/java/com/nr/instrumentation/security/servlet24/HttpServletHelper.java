@@ -3,11 +3,17 @@ package com.nr.instrumentation.security.servlet24;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 public class HttpServletHelper {
@@ -104,5 +110,40 @@ public class HttpServletHelper {
 
     private static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
+    }
+
+    public static void gatherURLMappings(ServletContext servletContext) {
+        try {
+            Collection<String> jspMappings = new ArrayList<>();
+            Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
+            getJSPMappings(servletContext, jspMappings, "/");
+
+            for (ServletRegistration servletRegistration : servletRegistrations.values()) {
+                Iterator<String> urls = servletRegistration.getMappings().iterator();
+                while (urls.hasNext()) {
+                    NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping("*", urls.next()));
+                }
+            }
+        } catch (Exception ex){
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    public static void getJSPMappings(ServletContext servletContext, Collection<String> mappings, String dir) {
+        try {
+            if(dir.endsWith("/")){
+                Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
+                for (String path : resourcePaths) {
+                    if(path.endsWith("/"))
+                        getJSPMappings(servletContext, mappings, path);
+                    else if(path.endsWith(".jsp") || path.endsWith(".jspx"))
+                        NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping("GET", path));
+                }
+            }
+        } catch (Exception ex){
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 }

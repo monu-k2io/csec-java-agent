@@ -1,0 +1,28 @@
+package javax.servlet;
+
+import com.newrelic.api.agent.weaver.MatchType;
+import com.newrelic.api.agent.weaver.Weave;
+import com.newrelic.api.agent.weaver.Weaver;
+import com.nr.instrumentation.security.servlet24.HttpServletHelper;
+
+import java.util.Set;
+
+@Weave(type = MatchType.Interface, originalName = "javax.servlet.ServletContainerInitializer")
+public class ServletContainerInitializer_Instrumentation {
+    public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+        System.out.println("inside onStartup 2.4");
+        try {
+            Weaver.callOriginal();
+        } finally {
+            postProcessing(ctx);
+        }
+    }
+
+    private static void postProcessing(ServletContext context) {
+        try {
+            HttpServletHelper.gatherURLMappings(context);
+        } catch (Throwable ignored) {
+            ignored.printStackTrace();
+        }
+    }
+}
