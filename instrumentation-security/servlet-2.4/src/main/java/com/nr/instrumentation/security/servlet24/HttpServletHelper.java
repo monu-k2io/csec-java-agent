@@ -10,7 +10,6 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -24,6 +23,8 @@ public class HttpServletHelper {
     public static final String SERVICE_METHOD_NAME = "service";
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
+    private static final String WILDCARD = "*";
+    private static final String SEPARATOR = "/";
 
     public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest){
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -114,14 +115,13 @@ public class HttpServletHelper {
 
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
-            Collection<String> jspMappings = new ArrayList<>();
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
-            getJSPMappings(servletContext, jspMappings, "/");
+            getJSPMappings(servletContext, SEPARATOR);
 
             for (ServletRegistration servletRegistration : servletRegistrations.values()) {
                 Iterator<String> urls = servletRegistration.getMappings().iterator();
                 while (urls.hasNext()) {
-                    NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping("*", urls.next()));
+                    NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, urls.next()));
                 }
             }
         } catch (Exception ex){
@@ -130,15 +130,15 @@ public class HttpServletHelper {
         }
     }
 
-    public static void getJSPMappings(ServletContext servletContext, Collection<String> mappings, String dir) {
+    public static void getJSPMappings(ServletContext servletContext, String dir) {
         try {
-            if(dir.endsWith("/")){
+            if(dir.endsWith(SEPARATOR)){
                 Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
                 for (String path : resourcePaths) {
-                    if(path.endsWith("/"))
-                        getJSPMappings(servletContext, mappings, path);
-                    else if(path.endsWith(".jsp") || path.endsWith(".jspx"))
-                        NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping("GET", path));
+                    if(path.endsWith(SEPARATOR))
+                        getJSPMappings(servletContext, path);
+                    else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX"))
+                        NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, path));
                 }
             }
         } catch (Exception ex){
