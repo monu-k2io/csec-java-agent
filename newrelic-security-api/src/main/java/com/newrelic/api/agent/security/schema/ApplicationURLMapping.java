@@ -24,4 +24,20 @@ public class ApplicationURLMapping {
     public void setUrl(String url) {
         this.url = url;
     }
+
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof ApplicationURLMapping) {
+            ApplicationURLMapping mapping = (ApplicationURLMapping) obj;
+            return url.equals(mapping.url) && method.equals(mapping.method);
+        }
+        return false;
+    }
+
+    public String toString() {
+        return "Method: " + method + ", Url: " + url;
+    }
 }
