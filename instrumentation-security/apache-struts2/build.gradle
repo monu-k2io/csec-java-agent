@@ -6,7 +6,7 @@ dependencies {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-struts2-2.1' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-struts2' }
 }
 
 verifyInstrumentation {
